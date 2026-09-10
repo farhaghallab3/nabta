@@ -3,7 +3,7 @@
 **From the field to your door — fully transparent.**
 
 🔗 **Live demo: [nabta-sigma.vercel.app](https://nabta-sigma.vercel.app)**
-&nbsp; · &nbsp; Demo logins (password `nabtademo123`): **`consumer`** · **`farmer`** · **`admin`**
+&nbsp; · &nbsp; Demo logins (password `nabtademo123`): **`consumer`** · **`farmer`**
 
 Nabta connects consumers directly to real farms in Egypt. A consumer *adopts* a
 share of a crop or animal batch and follows its journey — harvest, cold storage,
@@ -38,6 +38,8 @@ consumer a transparent, trust-building experience.
 
 ## Screenshots
 
+**English**
+
 | Landing | Browse batches | Batch detail |
 | --- | --- | --- |
 | ![Landing](docs-screenshots/01-landing.png) | ![Batches](docs-screenshots/02-batches.png) | ![Batch detail](docs-screenshots/03-batch-detail.png) |
@@ -46,11 +48,15 @@ consumer a transparent, trust-building experience.
 | --- | --- | --- |
 | ![My adoptions](docs-screenshots/06-my-adoptions.png) | ![Farmer dashboard](docs-screenshots/08-farmer-dashboard.png) | ![Analytics](docs-screenshots/09-analytics.png) |
 
-**Arabic (RTL)** — the default language; a globe toggle switches to English:
+**Arabic (RTL)** — Arabic is the default; the globe toggle in the nav switches to English.
 
-| Landing (عربي) | Batch detail (عربي) | My adoptions (عربي) |
-| --- | --- | --- |
-| ![Landing AR](docs-screenshots/ar-01-landing.png) | ![Detail AR](docs-screenshots/ar-03-detail.png) | ![Adoptions AR](docs-screenshots/ar-04-adoptions.png) |
+| Landing (عربي) | Browse batches (عربي) |
+| --- | --- |
+| ![Landing AR](docs-screenshots/ar-01-landing.png) | ![Batches AR](docs-screenshots/ar-02-batches.png) |
+
+| Batch detail (عربي) | My adoptions (عربي) |
+| --- | --- |
+| ![Detail AR](docs-screenshots/ar-03-batch-detail.png) | ![Adoptions AR](docs-screenshots/ar-04-my-adoptions.png) |
 
 ---
 
@@ -81,7 +87,7 @@ python manage.py seed                                  # 4 farms, 5 batches (EN/
 python manage.py runserver                             # http://127.0.0.1:8000
 ```
 
-**Demo logins** (created by `seed`): `farmer` / `consumer` / `admin` — password `nabtademo123`
+**Demo logins** (created by `seed`): `farmer` / `consumer` — password `nabtademo123`
 
 ### 2. Frontend
 
