@@ -19,9 +19,12 @@ class NabtaAPITests(APITestCase):
         self.farm = Farm.objects.create(
             name="Test Farm", owner=self.farmer, location="Fayoum"
         )
+        self.farm.name_ar = "مزرعة تجريبية"
+        self.farm.save()
         self.batch = Batch.objects.create(
             farm=self.farm,
             crop_type="Tomatoes",
+            crop_type_ar="طماطم",
             quantity_kg=100,
             planted_date=date.today() - timedelta(days=30),
             expected_harvest_date=date.today() + timedelta(days=30),
@@ -37,6 +40,21 @@ class NabtaAPITests(APITestCase):
 
     def test_batches_list_is_public(self):
         self.assertEqual(self.client.get("/api/batches/").status_code, 200)
+
+    def test_localized_fields_switch_with_lang(self):
+        en = self.client.get("/api/batches/").data["results"][0]
+        self.assertEqual(en["crop_type"], "Tomatoes")
+        self.assertEqual(en["farm_name"], "Test Farm")
+
+        ar = self.client.get("/api/batches/?lang=ar").data["results"][0]
+        self.assertEqual(ar["crop_type"], "طماطم")
+        self.assertEqual(ar["farm_name"], "مزرعة تجريبية")
+
+    def test_lang_falls_back_when_translation_missing(self):
+        # description_ar is empty -> Arabic request still returns the English text
+        ar = self.client.get(f"/api/batches/{self.batch.id}/?lang=ar").data
+        self.assertEqual(ar["category"], "crop")
+        self.assertEqual(ar["description"], "")
 
     def test_consumer_cannot_create_batch(self):
         self.auth("consumer1")

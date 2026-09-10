@@ -10,15 +10,15 @@ class TrackingEventInline(admin.TabularInline):
 
 @admin.register(Farm)
 class FarmAdmin(admin.ModelAdmin):
-    list_display = ("name", "owner", "location")
-    search_fields = ("name", "location")
+    list_display = ("name", "name_ar", "owner", "location")
+    search_fields = ("name", "name_ar", "location")
 
 
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
-    list_display = ("crop_type", "farm", "category", "expected_harvest_date", "qr_code")
+    list_display = ("crop_type", "crop_type_ar", "farm", "category", "expected_harvest_date")
     list_filter = ("category", "crop_type")
-    search_fields = ("crop_type", "farm__name")
+    search_fields = ("crop_type", "crop_type_ar", "farm__name")
     inlines = [TrackingEventInline]
 
 

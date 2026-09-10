@@ -12,6 +12,7 @@ from .serializers import (
     FarmSerializer,
     SubscriptionSerializer,
     TrackingEventSerializer,
+    TrackingEventWriteSerializer,
 )
 
 
@@ -78,11 +79,12 @@ class BatchViewSet(viewsets.ModelViewSet):
         batch = self.get_object()
         if batch.farm.owner_id != request.user.id:
             raise ValidationError("You can only log events for your own batches.")
-        serializer = TrackingEventSerializer(data=request.data)
+        serializer = TrackingEventWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         event = serializer.save(batch=batch)
         return response.Response(
-            TrackingEventSerializer(event).data, status=status.HTTP_201_CREATED
+            TrackingEventSerializer(event, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
         )
 
 

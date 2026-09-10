@@ -1,10 +1,14 @@
 from rest_framework import serializers
 
+from .i18n import LocalizedField
 from .models import Batch, ConsumerSubscription, Farm, TrackingEvent
 from .qr import qr_data_uri
 
 
 class FarmSerializer(serializers.ModelSerializer):
+    name = LocalizedField("name", source="*")
+    location = LocalizedField("location", source="*")
+    story = LocalizedField("story", source="*")
     image = serializers.CharField(read_only=True)
     owner_name = serializers.CharField(source="owner.username", read_only=True)
 
@@ -25,6 +29,7 @@ class FarmSerializer(serializers.ModelSerializer):
 
 class TrackingEventSerializer(serializers.ModelSerializer):
     stage_display = serializers.CharField(source="get_stage_display", read_only=True)
+    location = LocalizedField("location", source="*")
     loss_pct = serializers.FloatField(read_only=True)
 
     class Meta:
@@ -45,9 +50,26 @@ class TrackingEventSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "batch", "stage_display", "loss_pct")
 
 
+class TrackingEventWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrackingEvent
+        fields = (
+            "stage",
+            "quantity_ok",
+            "quantity_damaged",
+            "note",
+            "photo_url",
+            "location",
+            "timestamp",
+        )
+        extra_kwargs = {"timestamp": {"required": False}}
+
+
 class BatchListSerializer(serializers.ModelSerializer):
-    farm_name = serializers.CharField(source="farm.name", read_only=True)
-    farm_location = serializers.CharField(source="farm.location", read_only=True)
+    crop_type = LocalizedField("crop_type", source="*")
+    description = LocalizedField("description", source="*")
+    farm_name = LocalizedField("name", source="farm")
+    farm_location = LocalizedField("location", source="farm")
     image = serializers.CharField(read_only=True)
     growth_progress = serializers.IntegerField(read_only=True)
     current_stage = serializers.CharField(read_only=True)
@@ -113,8 +135,10 @@ class BatchWriteSerializer(serializers.ModelSerializer):
             "farm",
             "farm_name",
             "crop_type",
+            "crop_type_ar",
             "category",
             "description",
+            "description_ar",
             "quantity_kg",
             "price_per_share",
             "share_size_kg",
@@ -122,7 +146,11 @@ class BatchWriteSerializer(serializers.ModelSerializer):
             "expected_harvest_date",
             "photo_url",
         )
-        extra_kwargs = {"farm": {"required": False}}
+        extra_kwargs = {
+            "farm": {"required": False},
+            "crop_type_ar": {"required": False},
+            "description_ar": {"required": False},
+        }
 
     def validate(self, attrs):
         request = self.context["request"]
@@ -165,7 +193,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "batch_detail", "events")
 
     def get_events(self, obj):
-        return TrackingEventSerializer(obj.batch.events.all(), many=True).data
+        return TrackingEventSerializer(
+            obj.batch.events.all(), many=True, context=self.context
+        ).data
 
 
 class AdoptSerializer(serializers.Serializer):

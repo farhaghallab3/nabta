@@ -13,13 +13,16 @@ def generate_qr_token():
 
 class Farm(models.Model):
     name = models.CharField(max_length=255)
+    name_ar = models.CharField(max_length=255, blank=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="farms"
     )
     location = models.CharField(max_length=255)
+    location_ar = models.CharField(max_length=255, blank=True)
     photo = models.ImageField(upload_to="farms/", blank=True, null=True)
     photo_url = models.URLField(blank=True)
     story = models.TextField(blank=True)
+    story_ar = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -42,10 +45,12 @@ class Batch(models.Model):
 
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="batches")
     crop_type = models.CharField(max_length=100)
+    crop_type_ar = models.CharField(max_length=100, blank=True)
     category = models.CharField(
         max_length=10, choices=Category.choices, default=Category.CROP
     )
     description = models.TextField(blank=True)
+    description_ar = models.TextField(blank=True)
     quantity_kg = models.DecimalField(max_digits=10, decimal_places=2)
     price_per_share = models.DecimalField(
         max_digits=10, decimal_places=2, default=250,
@@ -138,6 +143,7 @@ class TrackingEvent(models.Model):
     note = models.CharField(max_length=500, blank=True)
     photo_url = models.URLField(blank=True)
     location = models.CharField(max_length=255, blank=True)
+    location_ar = models.CharField(max_length=255, blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
