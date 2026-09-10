@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../../components/Spinner";
@@ -7,9 +8,10 @@ import { EmptyState } from "../../components/EmptyState";
 import { StatCard } from "../../components/StatCard";
 import { ProgressBar } from "../../components/ProgressBar";
 import { Sprout, Truck, QrIcon, ArrowRight } from "../../components/Icons";
-import { egp, stageLabel, daysUntil, PLACEHOLDER_IMG } from "../../lib/format";
+import { egp, stageLabel, daysUntil, num, PLACEHOLDER_IMG } from "../../lib/format";
 
 export default function FarmerDashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [batches, setBatches] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -24,72 +26,75 @@ export default function FarmerDashboard() {
         setBatches(b.data.results);
         setAnalytics(a.data);
       })
-      .catch(() => setError("Couldn't load your dashboard."));
-  }, []);
+      .catch(() => setError(t("farmerDash.loadError")));
+  }, [t]);
 
   if (error)
     return (
       <div className="container-page py-16">
-        <EmptyState title="Something went wrong" description={error} />
+        <EmptyState title={t("common.somethingWrong")} description={error} />
       </div>
     );
   if (!batches || !analytics)
-    return <Spinner full label="Loading your dashboard…" />;
+    return <Spinner full label={t("farmerDash.loading")} />;
 
   return (
     <div className="container-page py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-ink sm:text-4xl">
-            Farmer dashboard
+            {t("farmerDash.title")}
           </h1>
           <p className="mt-2 text-ink/55">
-            {user.first_name || user.username} — your batches and shipments.
+            {t("farmerDash.subtitle", { name: user.first_name || user.username })}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link to="/farmer/analytics" className="btn-secondary">
-            View analytics
+            {t("farmerDash.viewAnalytics")}
           </Link>
           <Link to="/farmer/batches/new" className="btn-primary">
-            Register batch <ArrowRight className="h-4 w-4" />
+            {t("farmerDash.registerBatch")}{" "}
+            <ArrowRight className="h-4 w-4 rtl-flip" />
           </Link>
         </div>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Active batches"
-          value={analytics.active_batches}
+          label={t("farmerDash.statActive")}
+          value={num(analytics.active_batches)}
           icon={Sprout}
         />
         <StatCard
-          label="Tracked shipments"
-          value={analytics.tracked_shipments}
+          label={t("farmerDash.statShipments")}
+          value={num(analytics.tracked_shipments)}
           icon={Truck}
         />
         <StatCard
-          label="Total adoptions"
-          value={analytics.total_adoptions}
+          label={t("farmerDash.statAdoptions")}
+          value={num(analytics.total_adoptions)}
           icon={QrIcon}
         />
         <StatCard
-          label="Overall loss"
-          value={`${analytics.overall_loss_pct}%`}
-          hint="Across all logged stages"
+          label={t("farmerDash.statLoss")}
+          value={`${num(analytics.overall_loss_pct)}%`}
+          hint={t("farmerDash.statLossHint")}
           accent
         />
       </div>
 
-      <h2 className="mt-12 text-xl font-bold text-ink">Your batches</h2>
+      <h2 className="mt-12 text-xl font-bold text-ink">
+        {t("farmerDash.yourBatches")}
+      </h2>
       {batches.length === 0 ? (
         <div className="mt-4">
           <EmptyState
-            title="No batches yet"
-            description="Register your first batch to generate a QR label and start tracking."
+            title={t("farmerDash.emptyTitle")}
+            description={t("farmerDash.emptyText")}
             action={
               <Link to="/farmer/batches/new" className="btn-primary mt-2">
-                Register batch
+                {t("farmerDash.registerBatch")}
               </Link>
             }
           />
@@ -116,11 +121,13 @@ export default function FarmerDashboard() {
                       </span>
                     </div>
                     <p className="text-sm text-ink/55">
-                      {b.farm_name} · {b.quantity_kg} kg
+                      {b.farm_name} · {t("common.kg", { n: num(b.quantity_kg) })}
                     </p>
                     <p className="mt-0.5 text-xs text-ink/45">
-                      {egp(b.price_per_share)} / share ·{" "}
-                      {days > 0 ? `harvest in ${days}d` : "harvest underway"}
+                      {egp(b.price_per_share)} ·{" "}
+                      {days > 0
+                        ? t("common.harvestInDaysShort", { n: days })
+                        : t("common.harvestUnderway")}
                     </p>
                     <ProgressBar className="mt-3" value={b.growth_progress} />
                   </div>
@@ -130,13 +137,13 @@ export default function FarmerDashboard() {
                     to={`/farmer/batches/${b.id}/log`}
                     className="btn-primary flex-1 py-2 text-xs"
                   >
-                    Log stage
+                    {t("farmerDash.logStage")}
                   </Link>
                   <Link
                     to={`/batches/${b.id}`}
                     className="btn-secondary flex-1 py-2 text-xs"
                   >
-                    View public page
+                    {t("farmerDash.viewPublic")}
                   </Link>
                 </div>
               </div>

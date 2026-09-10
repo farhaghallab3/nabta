@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 // Neutral leaf-tinted placeholder for batches/farms with no photo yet.
 export const PLACEHOLDER_IMG =
   "data:image/svg+xml;charset=utf-8," +
@@ -11,35 +13,43 @@ export const PLACEHOLDER_IMG =
     </svg>`
   );
 
-export const STAGES = [
-  { key: "harvest", label: "Harvested" },
-  { key: "cold_storage", label: "Cold Storage" },
-  { key: "transport", label: "In Transit" },
-  { key: "market", label: "At Market" },
-  { key: "delivered", label: "Delivered" },
+export const STAGE_KEYS = [
+  "harvest",
+  "cold_storage",
+  "transport",
+  "market",
+  "delivered",
 ];
 
 export function stageIndex(stage) {
-  const i = STAGES.findIndex((s) => s.key === stage);
-  return i === -1 ? -1 : i;
+  return STAGE_KEYS.indexOf(stage);
 }
 
 export function stageLabel(stage) {
-  return STAGES.find((s) => s.key === stage)?.label || "Growing";
+  if (!stage) return i18n.t("stages.growing");
+  return i18n.t(`stages.${stage}`, { defaultValue: i18n.t("stages.growing") });
+}
+
+function locale() {
+  return i18n.language === "ar" ? "ar-EG" : "en-GB";
 }
 
 export function egp(value) {
   const n = Number(value || 0);
-  return new Intl.NumberFormat("en-EG", {
+  return new Intl.NumberFormat(i18n.language === "ar" ? "ar-EG" : "en-EG", {
     style: "currency",
     currency: "EGP",
     maximumFractionDigits: 0,
   }).format(n);
 }
 
+export function num(value) {
+  return new Intl.NumberFormat(locale()).format(Number(value || 0));
+}
+
 export function formatDate(value) {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-GB", {
+  return new Date(value).toLocaleDateString(locale(), {
     day: "numeric",
     month: "short",
     year: "numeric",

@@ -1,4 +1,4 @@
-import { STAGES, stageIndex } from "../lib/format";
+import { STAGE_KEYS, stageIndex, stageLabel } from "../lib/format";
 import { stageIcons, Check, Sprout } from "./Icons";
 
 export function StageStepper({ currentStage, className = "" }) {
@@ -8,12 +8,12 @@ export function StageStepper({ currentStage, className = "" }) {
     <div className={className}>
       {/* Desktop: horizontal */}
       <ol className="hidden items-center sm:flex">
-        {STAGES.map((stage, idx) => {
-          const Icon = stageIcons[stage.key] || Sprout;
+        {STAGE_KEYS.map((key, idx) => {
+          const Icon = stageIcons[key] || Sprout;
           const done = idx < activeIdx;
           const active = idx === activeIdx;
           return (
-            <li key={stage.key} className="flex flex-1 items-center last:flex-none">
+            <li key={key} className="flex flex-1 items-center last:flex-none">
               <div className="flex flex-col items-center gap-2 text-center">
                 <span
                   className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition-colors ${
@@ -31,10 +31,10 @@ export function StageStepper({ currentStage, className = "" }) {
                     done || active ? "text-forest" : "text-ink/35"
                   }`}
                 >
-                  {stage.label}
+                  {stageLabel(key)}
                 </span>
               </div>
-              {idx < STAGES.length - 1 && (
+              {idx < STAGE_KEYS.length - 1 && (
                 <span
                   className={`mx-1 mb-6 h-0.5 flex-1 rounded ${
                     idx < activeIdx ? "bg-forest" : "bg-forest/15"
@@ -48,12 +48,12 @@ export function StageStepper({ currentStage, className = "" }) {
 
       {/* Mobile: vertical */}
       <ol className="space-y-0 sm:hidden">
-        {STAGES.map((stage, idx) => {
-          const Icon = stageIcons[stage.key] || Sprout;
+        {STAGE_KEYS.map((key, idx) => {
+          const Icon = stageIcons[key] || Sprout;
           const done = idx < activeIdx;
           const active = idx === activeIdx;
           return (
-            <li key={stage.key} className="flex gap-3">
+            <li key={key} className="flex gap-3">
               <div className="flex flex-col items-center">
                 <span
                   className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${
@@ -66,7 +66,7 @@ export function StageStepper({ currentStage, className = "" }) {
                 >
                   {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                 </span>
-                {idx < STAGES.length - 1 && (
+                {idx < STAGE_KEYS.length - 1 && (
                   <span
                     className={`my-1 w-0.5 flex-1 ${
                       idx < activeIdx ? "bg-forest" : "bg-forest/15"
@@ -79,7 +79,7 @@ export function StageStepper({ currentStage, className = "" }) {
                   done || active ? "text-forest" : "text-ink/35"
                 }`}
               >
-                {stage.label}
+                {stageLabel(key)}
               </span>
             </li>
           );

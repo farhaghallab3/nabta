@@ -1,28 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { apiErrorMessage } from "../lib/api";
 import { Leaf, Sprout, Home } from "../components/Icons";
 
-const ROLES = [
-  {
-    key: "consumer",
-    title: "I'm a consumer",
-    text: "Adopt shares of farms and follow your food home.",
-    icon: Home,
-  },
-  {
-    key: "farmer",
-    title: "I'm a farmer",
-    text: "List batches, track shipments, cut post-harvest loss.",
-    icon: Sprout,
-  },
-];
-
 export default function Register() {
+  const { t } = useTranslation();
   const { register } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
+
+  const roles = [
+    { key: "consumer", title: t("auth.consumerRole"), text: t("auth.consumerRoleText"), icon: Home },
+    { key: "farmer", title: t("auth.farmerRole"), text: t("auth.farmerRoleText"), icon: Sprout },
+  ];
 
   const [form, setForm] = useState({
     username: "",
@@ -43,15 +35,12 @@ export default function Register() {
     setLoading(true);
     setError(null);
     try {
-      const user = await register({
-        ...form,
-        username: form.username.trim(),
-      });
+      const user = await register({ ...form, username: form.username.trim() });
       navigate(user.role === "farmer" ? "/farmer" : "/my-adoptions", {
         replace: true,
       });
     } catch (err) {
-      setError(apiErrorMessage(err, "Could not create your account."));
+      setError(apiErrorMessage(err, t("auth.createError")));
     } finally {
       setLoading(false);
     }
@@ -64,20 +53,20 @@ export default function Register() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest text-white">
             <Leaf className="h-5 w-5" />
           </span>
-          <span className="text-xl font-extrabold text-ink">Nabta</span>
+          <span className="text-xl font-extrabold text-ink">{t("brand.name")}</span>
         </div>
 
         <div className="card p-8">
-          <h1 className="text-2xl font-bold text-ink">Create your account</h1>
-          <p className="mt-1 text-sm text-ink/55">Free — takes a minute.</p>
+          <h1 className="text-2xl font-bold text-ink">{t("auth.createTitle")}</h1>
+          <p className="mt-1 text-sm text-ink/55">{t("auth.createSubtitle")}</p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {ROLES.map((r) => (
+            {roles.map((r) => (
               <button
                 key={r.key}
                 type="button"
                 onClick={() => update("role", r.key)}
-                className={`rounded-xl border-2 p-4 text-left transition-all ${
+                className={`rounded-xl border-2 p-4 text-start transition-all ${
                   form.role === r.key
                     ? "border-forest bg-forest-50"
                     : "border-black/10 hover:border-forest/40"
@@ -96,7 +85,7 @@ export default function Register() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="first_name">
-                  First name
+                  {t("auth.firstName")}
                 </label>
                 <input
                   id="first_name"
@@ -107,13 +96,14 @@ export default function Register() {
               </div>
               <div>
                 <label className="label" htmlFor="username">
-                  Username
+                  {t("auth.username")}
                 </label>
                 <input
                   id="username"
                   className="input"
                   value={form.username}
                   autoComplete="username"
+                  dir="ltr"
                   onChange={(e) => update("username", e.target.value)}
                   required
                 />
@@ -121,7 +111,7 @@ export default function Register() {
             </div>
             <div>
               <label className="label" htmlFor="email">
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -129,13 +119,14 @@ export default function Register() {
                 className="input"
                 value={form.email}
                 autoComplete="email"
+                dir="ltr"
                 onChange={(e) => update("email", e.target.value)}
                 required
               />
             </div>
             <div>
               <label className="label" htmlFor="password">
-                Password
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -143,12 +134,11 @@ export default function Register() {
                 className="input"
                 value={form.password}
                 autoComplete="new-password"
+                dir="ltr"
                 onChange={(e) => update("password", e.target.value)}
                 required
               />
-              <p className="mt-1 text-xs text-ink/40">
-                At least 8 characters, not all numeric.
-              </p>
+              <p className="mt-1 text-xs text-ink/40">{t("auth.passwordHint")}</p>
             </div>
 
             {error && (
@@ -158,14 +148,14 @@ export default function Register() {
             )}
 
             <button className="btn-primary w-full" disabled={loading}>
-              {loading ? "Creating account…" : "Create account"}
+              {loading ? t("auth.creating") : t("auth.createButton")}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-ink/55">
-            Already have an account?{" "}
+            {t("auth.haveAccount")}{" "}
             <Link to="/login" className="font-semibold text-forest hover:underline">
-              Log in
+              {t("auth.loginButton")}
             </Link>
           </p>
         </div>

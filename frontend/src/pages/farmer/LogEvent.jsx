@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../../lib/api";
 import { Spinner } from "../../components/Spinner";
 import { StageStepper } from "../../components/StageStepper";
 import { QrIcon, Check, stageIcons, Sprout } from "../../components/Icons";
-import { STAGES, formatDate } from "../../lib/format";
-
-const LOG_STAGES = STAGES; // harvest → delivered
+import { STAGE_KEYS, stageLabel, formatDate, num } from "../../lib/format";
 
 function QrScanner({ onDetected, onClose }) {
+  const { t } = useTranslation();
   const videoRef = useRef(null);
   const [err, setErr] = useState(null);
 
@@ -17,7 +17,7 @@ function QrScanner({ onDetected, onClose }) {
     let raf;
     const supported = "BarcodeDetector" in window;
     if (!supported) {
-      setErr("Your browser can't scan here — enter the code manually.");
+      setErr(t("logEvent.scannerUnsupported"));
       return;
     }
     const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
@@ -33,7 +33,7 @@ function QrScanner({ onDetected, onClose }) {
           tick();
         }
       } catch {
-        setErr("Camera access was blocked — enter the code manually.");
+        setErr(t("logEvent.cameraBlocked"));
       }
     }
     async function tick() {
@@ -52,9 +52,9 @@ function QrScanner({ onDetected, onClose }) {
     start();
     return () => {
       cancelAnimationFrame(raf);
-      stream?.getTracks().forEach((t) => t.stop());
+      stream?.getTracks().forEach((tr) => tr.stop());
     };
-  }, [onDetected]);
+  }, [onDetected, t]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4">
@@ -70,11 +70,9 @@ function QrScanner({ onDetected, onClose }) {
         </div>
         <div className="p-4">
           {err && <p className="text-sm text-red-600">{err}</p>}
-          <p className="text-xs text-ink/50">
-            Point the camera at the batch QR label.
-          </p>
+          <p className="text-xs text-ink/50">{t("logEvent.pointCamera")}</p>
           <button onClick={onClose} className="btn-secondary mt-3 w-full py-2">
-            Cancel
+            {t("logEvent.cancel")}
           </button>
         </div>
       </div>
@@ -83,6 +81,7 @@ function QrScanner({ onDetected, onClose }) {
 }
 
 export default function LogEvent() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -104,8 +103,8 @@ export default function LogEvent() {
     api
       .get("/batches/", { params: { mine: 1 } })
       .then((res) => setBatches(res.data.results))
-      .catch(() => setError("Couldn't load your batches."));
-  }, []);
+      .catch(() => setError(t("logEvent.loadError")));
+  }, [t]);
 
   const selected = batches?.find((b) => String(b.id) === String(batchId));
 
@@ -115,19 +114,21 @@ export default function LogEvent() {
 
   function handleScan(value) {
     setScanning(false);
-    const match = batches?.find((b) => value.includes(b.qr_code) || b.qr_code === value);
+    const match = batches?.find(
+      (b) => value.includes(b.qr_code) || b.qr_code === value
+    );
     if (match) {
       setBatchId(String(match.id));
       setError(null);
     } else {
-      setError("That QR doesn't match one of your batches.");
+      setError(t("logEvent.qrNoMatch"));
     }
   }
 
   async function submit(e) {
     e.preventDefault();
     if (!batchId) {
-      setError("Pick a batch first.");
+      setError(t("logEvent.pickBatchFirst"));
       return;
     }
     setLoading(true);
@@ -141,13 +142,13 @@ export default function LogEvent() {
       setDone(true);
       setTimeout(() => navigate("/farmer"), 1100);
     } catch (err) {
-      setError(apiErrorMessage(err, "Could not log the event."));
+      setError(apiErrorMessage(err, t("logEvent.submitError")));
     } finally {
       setLoading(false);
     }
   }
 
-  if (!batches) return <Spinner full label="Loading…" />;
+  if (!batches) return <Spinner full label={t("logEvent.loading")} />;
 
   if (done)
     return (
@@ -156,10 +157,10 @@ export default function LogEvent() {
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-50 text-forest">
             <Check className="h-6 w-6" />
           </span>
-          <h1 className="mt-4 text-xl font-bold text-ink">Stage logged</h1>
-          <p className="mt-1 text-sm text-ink/55">
-            Every adopter's timeline just updated.
-          </p>
+          <h1 className="mt-4 text-xl font-bold text-ink">
+            {t("logEvent.doneTitle")}
+          </h1>
+          <p className="mt-1 text-sm text-ink/55">{t("logEvent.doneText")}</p>
         </div>
       </div>
     );
@@ -171,24 +172,22 @@ export default function LogEvent() {
       )}
 
       <Link to="/farmer" className="text-sm font-medium text-forest hover:underline">
-        ← Dashboard
+        <span className="rtl-flip inline-block">←</span> {t("logEvent.back")}
       </Link>
-      <h1 className="mt-3 text-3xl font-bold text-ink">Log a tracking event</h1>
-      <p className="mt-2 text-ink/55">
-        Scan the crate QR or pick the batch, then record what moved.
-      </p>
+      <h1 className="mt-3 text-3xl font-bold text-ink">{t("logEvent.title")}</h1>
+      <p className="mt-2 text-ink/55">{t("logEvent.subtitle")}</p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
         <form onSubmit={submit} className="card space-y-5 p-6">
           <div>
             <div className="flex items-center justify-between">
-              <label className="label mb-0">Batch</label>
+              <label className="label mb-0">{t("logEvent.batch")}</label>
               <button
                 type="button"
                 onClick={() => setScanning(true)}
                 className="btn-ghost py-1.5 text-xs"
               >
-                <QrIcon className="h-4 w-4" /> Scan QR
+                <QrIcon className="h-4 w-4" /> {t("logEvent.scanQr")}
               </button>
             </div>
             <select
@@ -197,7 +196,7 @@ export default function LogEvent() {
               onChange={(e) => setBatchId(e.target.value)}
               required
             >
-              <option value="">Select a batch…</option>
+              <option value="">{t("logEvent.selectBatch")}</option>
               {batches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.crop_type} — {b.farm_name}
@@ -207,23 +206,23 @@ export default function LogEvent() {
           </div>
 
           <div>
-            <label className="label">Stage</label>
+            <label className="label">{t("logEvent.stage")}</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {LOG_STAGES.map((s) => {
-                const Icon = stageIcons[s.key] || Sprout;
+              {STAGE_KEYS.map((key) => {
+                const Icon = stageIcons[key] || Sprout;
                 return (
                   <button
-                    key={s.key}
+                    key={key}
                     type="button"
-                    onClick={() => update("stage", s.key)}
+                    onClick={() => update("stage", key)}
                     className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 text-xs font-semibold transition-all ${
-                      form.stage === s.key
+                      form.stage === key
                         ? "border-forest bg-forest-50 text-forest"
                         : "border-black/10 text-ink/50 hover:border-forest/40"
                     }`}
                   >
                     <Icon className="h-5 w-5" />
-                    {s.label}
+                    {stageLabel(key)}
                   </button>
                 );
               })}
@@ -232,7 +231,7 @@ export default function LogEvent() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="label">Quantity OK (kg)</label>
+              <label className="label">{t("logEvent.qtyOk")}</label>
               <input
                 type="number"
                 min="0"
@@ -243,7 +242,7 @@ export default function LogEvent() {
               />
             </div>
             <div>
-              <label className="label">Quantity damaged (kg)</label>
+              <label className="label">{t("logEvent.qtyDamaged")}</label>
               <input
                 type="number"
                 min="0"
@@ -255,16 +254,16 @@ export default function LogEvent() {
           </div>
 
           <div>
-            <label className="label">Location</label>
+            <label className="label">{t("logEvent.location")}</label>
             <input
               className="input"
               value={form.location}
               onChange={(e) => update("location", e.target.value)}
-              placeholder="e.g. Fayoum cold store"
+              placeholder={t("logEvent.locationPlaceholder")}
             />
           </div>
           <div>
-            <label className="label">Note (optional)</label>
+            <label className="label">{t("logEvent.note")}</label>
             <input
               className="input"
               value={form.note}
@@ -279,30 +278,32 @@ export default function LogEvent() {
           )}
 
           <button className="btn-primary w-full" disabled={loading}>
-            {loading ? "Logging…" : "Log event"}
+            {loading ? t("logEvent.logging") : t("logEvent.submit")}
           </button>
         </form>
 
         <div className="card h-fit p-6">
           <h2 className="text-lg font-bold text-ink">
-            {selected ? selected.crop_type : "Batch preview"}
+            {selected ? selected.crop_type : t("logEvent.previewTitle")}
           </h2>
           {selected ? (
             <>
               <p className="text-sm text-ink/55">
-                {selected.farm_name} · {selected.quantity_kg} kg
+                {t("logEvent.previewFarmQty", {
+                  farm: selected.farm_name,
+                  qty: num(selected.quantity_kg),
+                })}
               </p>
-              <StageStepper
-                currentStage={form.stage}
-                className="mt-6"
-              />
+              <StageStepper currentStage={form.stage} className="mt-6" />
               <p className="mt-4 text-xs text-ink/45">
-                Expected harvest {formatDate(selected.expected_harvest_date)}
+                {t("logEvent.previewHarvest", {
+                  date: formatDate(selected.expected_harvest_date),
+                })}
               </p>
             </>
           ) : (
             <p className="mt-2 text-sm text-ink/50">
-              Pick or scan a batch to preview its journey.
+              {t("logEvent.previewEmpty")}
             </p>
           )}
         </div>

@@ -1,4 +1,4 @@
-export function Spinner({ label = "Loading…", full = false }) {
+export function Spinner({ label, full = false }) {
   return (
     <div
       className={`flex flex-col items-center justify-center gap-3 text-forest/70 ${
@@ -6,7 +6,7 @@ export function Spinner({ label = "Loading…", full = false }) {
       }`}
     >
       <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-forest/20 border-t-forest" />
-      <span className="text-sm font-medium">{label}</span>
+      {label && <span className="text-sm font-medium">{label}</span>}
     </div>
   );
 }
