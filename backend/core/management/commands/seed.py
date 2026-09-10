@@ -136,7 +136,20 @@ BATCHES = [
 class Command(BaseCommand):
     help = "Seed demo farms, batches, tracking events and adoptions."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Re-seed even if batches already exist (wipes demo data first).",
+        )
+
     def handle(self, *args, **options):
+        if Batch.objects.exists() and not options["force"]:
+            self.stdout.write(
+                "Batches already exist — skipping seed. Use --force to re-seed."
+            )
+            return
+
         self.stdout.write("Clearing existing demo data…")
         Farm.objects.all().delete()
         ConsumerSubscription.objects.all().delete()
