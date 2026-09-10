@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -13,6 +13,19 @@
   }
   h1, h2, h3 {
     @apply tracking-tight;
+  }
+
+  /* RTL: Arabic reads better with a touch more line-height and no italics. */
+  [dir="rtl"] body {
+    line-height: 1.7;
+  }
+  [dir="rtl"] i,
+  [dir="rtl"] em {
+    font-style: normal;
+  }
+  /* Flip inline directional arrows/chevrons that are decorative. */
+  [dir="rtl"] .rtl-flip {
+    transform: scaleX(-1);
   }
 }
 

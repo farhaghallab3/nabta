@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "../lib/api";
 import { BatchCard } from "../components/BatchCard";
 import { SkeletonCard } from "../components/Spinner";
 import { EmptyState } from "../components/EmptyState";
-
-const FILTERS = [
-  { key: "", label: "All" },
-  { key: "crop", label: "Crops" },
-  { key: "animal", label: "Animal" },
-];
+import { num } from "../lib/format";
 
 export default function Batches() {
+  const { t } = useTranslation();
   const [batches, setBatches] = useState(null);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+
+  const filters = [
+    { key: "", label: t("common.all") },
+    { key: "crop", label: t("common.crops") },
+    { key: "animal", label: t("common.animals") },
+  ];
 
   useEffect(() => {
     let active = true;
@@ -22,17 +25,20 @@ export default function Batches() {
     const params = {};
     if (category) params.category = category;
     if (search) params.search = search;
-    const t = setTimeout(() => {
-      api
-        .get("/batches/", { params })
-        .then((res) => active && setBatches(res.data.results))
-        .catch(() => active && setError("Couldn't load batches. Try again."));
-    }, search ? 300 : 0);
+    const t2 = setTimeout(
+      () => {
+        api
+          .get("/batches/", { params })
+          .then((res) => active && setBatches(res.data.results))
+          .catch(() => active && setError(t("batches.loadError")));
+      },
+      search ? 300 : 0
+    );
     return () => {
       active = false;
-      clearTimeout(t);
+      clearTimeout(t2);
     };
-  }, [search, category]);
+  }, [search, category, t]);
 
   const count = useMemo(() => batches?.length ?? 0, [batches]);
 
@@ -40,17 +46,14 @@ export default function Batches() {
     <div className="container-page py-12">
       <div className="max-w-2xl">
         <h1 className="text-3xl font-bold text-ink sm:text-4xl">
-          Available batches
+          {t("batches.title")}
         </h1>
-        <p className="mt-2 text-ink/55">
-          Every batch is a real crop or animal on an Egyptian farm. Adopt a share
-          and follow it home.
-        </p>
+        <p className="mt-2 text-ink/55">{t("batches.subtitle")}</p>
       </div>
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2">
-          {FILTERS.map((f) => (
+          {filters.map((f) => (
             <button
               key={f.key}
               onClick={() => setCategory(f.key)}
@@ -67,14 +70,14 @@ export default function Batches() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search crop, farm or location…"
+          placeholder={t("batches.searchPlaceholder")}
           className="input sm:max-w-xs"
         />
       </div>
 
       <div className="mt-8">
         {error ? (
-          <EmptyState title="Something went wrong" description={error} />
+          <EmptyState title={t("common.somethingWrong")} description={error} />
         ) : batches === null ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -83,13 +86,13 @@ export default function Batches() {
           </div>
         ) : count === 0 ? (
           <EmptyState
-            title="No batches match"
-            description="Try clearing the search or switching category."
+            title={t("batches.noMatchTitle")}
+            description={t("batches.noMatchText")}
           />
         ) : (
           <>
             <p className="mb-4 text-sm text-ink/45">
-              {count} batch{count === 1 ? "" : "es"}
+              {t("batches.count", { n: num(count) })}
             </p>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {batches.map((b) => (

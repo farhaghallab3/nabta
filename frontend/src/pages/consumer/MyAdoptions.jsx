@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../../components/Spinner";
@@ -7,9 +8,16 @@ import { EmptyState } from "../../components/EmptyState";
 import { StageStepper } from "../../components/StageStepper";
 import { StatCard } from "../../components/StatCard";
 import { Sprout, Truck, Check, MapPin } from "../../components/Icons";
-import { formatDate, stageLabel, daysUntil, PLACEHOLDER_IMG } from "../../lib/format";
+import {
+  formatDate,
+  stageLabel,
+  daysUntil,
+  num,
+  PLACEHOLDER_IMG,
+} from "../../lib/format";
 
 export default function MyAdoptions() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [items, setItems] = useState(null);
   const [error, setError] = useState(null);
@@ -18,16 +26,16 @@ export default function MyAdoptions() {
     api
       .get("/my-adoptions/")
       .then((res) => setItems(res.data.results))
-      .catch(() => setError("Couldn't load your adoptions."));
-  }, []);
+      .catch(() => setError(t("adoptions.loadError")));
+  }, [t]);
 
   if (error)
     return (
       <div className="container-page py-16">
-        <EmptyState title="Something went wrong" description={error} />
+        <EmptyState title={t("common.somethingWrong")} description={error} />
       </div>
     );
-  if (!items) return <Spinner full label="Loading your adoptions…" />;
+  if (!items) return <Spinner full label={t("adoptions.loading")} />;
 
   const delivered = items.filter(
     (i) => i.batch_detail.current_stage === "delivered"
@@ -39,20 +47,20 @@ export default function MyAdoptions() {
   return (
     <div className="container-page py-12">
       <h1 className="text-3xl font-bold text-ink sm:text-4xl">
-        My adoptions
+        {t("adoptions.title")}
       </h1>
       <p className="mt-2 text-ink/55">
-        Hi {user.first_name || user.username} — here's where your food is right now.
+        {t("adoptions.subtitle", { name: user.first_name || user.username })}
       </p>
 
       {items.length === 0 ? (
         <div className="mt-10">
           <EmptyState
-            title="You haven't adopted a batch yet"
-            description="Browse available batches and adopt a share to start following it."
+            title={t("adoptions.emptyTitle")}
+            description={t("adoptions.emptyText")}
             action={
               <Link to="/batches" className="btn-primary mt-2">
-                Browse batches
+                {t("adoptions.browseBatches")}
               </Link>
             }
           />
@@ -60,15 +68,29 @@ export default function MyAdoptions() {
       ) : (
         <>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <StatCard label="Batches adopted" value={items.length} icon={Sprout} />
-            <StatCard label="On the move" value={inTransit} icon={Truck} />
-            <StatCard label="Delivered" value={delivered} icon={Check} accent />
+            <StatCard
+              label={t("adoptions.statAdopted")}
+              value={num(items.length)}
+              icon={Sprout}
+            />
+            <StatCard
+              label={t("adoptions.statMoving")}
+              value={num(inTransit)}
+              icon={Truck}
+            />
+            <StatCard
+              label={t("adoptions.statDelivered")}
+              value={num(delivered)}
+              icon={Check}
+              accent
+            />
           </div>
 
           <div className="mt-10 space-y-6">
             {items.map((item) => {
               const b = item.batch_detail;
               const days = daysUntil(b.expected_harvest_date);
+              const shareCount = Number(item.quantity_committed);
               return (
                 <div key={item.id} className="card overflow-hidden">
                   <div className="grid gap-6 p-6 lg:grid-cols-[280px_1fr]">
@@ -82,25 +104,26 @@ export default function MyAdoptions() {
                         {b.crop_type}
                       </h3>
                       <p className="flex items-center gap-1 text-sm text-ink/55">
-                        <MapPin className="h-3.5 w-3.5" />
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
                         {b.farm_name}
                       </p>
                       <p className="mt-1 text-xs text-ink/45">
-                        {item.quantity_committed} share
-                        {Number(item.quantity_committed) === 1 ? "" : "s"} ·{" "}
-                        adopted {formatDate(item.created_at)}
+                        {t(
+                          shareCount === 1
+                            ? "adoptions.shareAdopted"
+                            : "adoptions.sharesAdopted",
+                          { n: num(shareCount), date: formatDate(item.created_at) }
+                        )}
                       </p>
                     </Link>
 
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="badge">
-                          {stageLabel(b.current_stage)}
-                        </span>
+                        <span className="badge">{stageLabel(b.current_stage)}</span>
                         <span className="text-xs text-ink/45">
                           {days > 0
-                            ? `Harvest in ${days} days`
-                            : "Harvest underway"}
+                            ? t("common.harvestInDays", { n: days })
+                            : t("common.harvestUnderway")}
                         </span>
                       </div>
                       <StageStepper
@@ -109,19 +132,19 @@ export default function MyAdoptions() {
                       />
                       <div className="mt-4 flex flex-wrap gap-3 border-t border-black/5 pt-4 text-sm">
                         <span className="text-ink/50">
-                          Latest updates:
+                          {t("adoptions.latestUpdates")}
                         </span>
                         {item.events.slice(-3).map((e) => (
                           <span
                             key={e.id}
                             className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-ink/60"
                           >
-                            {e.stage_display} · {formatDate(e.timestamp)}
+                            {stageLabel(e.stage)} · {formatDate(e.timestamp)}
                           </span>
                         ))}
                         {item.events.length === 0 && (
                           <span className="text-xs text-ink/40">
-                            None yet
+                            {t("adoptions.noneYet")}
                           </span>
                         )}
                       </div>

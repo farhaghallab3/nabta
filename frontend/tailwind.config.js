@@ -20,8 +20,14 @@ export default {
         ink: "#1B2B1C",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["'Clash Display'", "Inter", "sans-serif"],
+        sans: [
+          "Inter",
+          "Cairo",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        display: ["'Clash Display'", "Inter", "Cairo", "sans-serif"],
       },
       boxShadow: {
         soft: "0 10px 40px -12px rgba(27, 43, 28, 0.18)",

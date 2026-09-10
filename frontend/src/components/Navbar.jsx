@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Leaf } from "./Icons";
+import { LanguageToggle } from "./LanguageToggle";
 
 function Brand() {
+  const { t } = useTranslation();
   return (
     <Link to="/" className="flex items-center gap-2">
       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest text-white">
         <Leaf className="h-5 w-5" />
       </span>
       <span className="text-xl font-extrabold tracking-tight text-ink">
-        Nabta
+        {t("brand.name")}
       </span>
     </Link>
   );
@@ -22,6 +25,7 @@ const linkClass = ({ isActive }) =>
   }`;
 
 export function Navbar() {
+  const { t } = useTranslation();
   const { user, logout, isFarmer } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -33,8 +37,8 @@ export function Navbar() {
   }
 
   const dashboardLink = isFarmer
-    ? { to: "/farmer", label: "Farmer Dashboard" }
-    : { to: "/my-adoptions", label: "My Adoptions" };
+    ? { to: "/farmer", label: t("nav.farmerDashboard") }
+    : { to: "/my-adoptions", label: t("nav.myAdoptions") };
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/5 bg-cream/80 backdrop-blur-md">
@@ -43,10 +47,10 @@ export function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           <NavLink to="/batches" className={linkClass}>
-            Browse Batches
+            {t("nav.browse")}
           </NavLink>
           <NavLink to="/for-farmers" className={linkClass}>
-            For Farmers
+            {t("nav.forFarmers")}
           </NavLink>
           {user && (
             <NavLink to={dashboardLink.to} className={linkClass}>
@@ -56,52 +60,56 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <LanguageToggle className="py-1.5" />
           {user ? (
             <>
               <span className="text-sm text-ink/55">
-                Hi, <span className="font-semibold text-ink">{user.username}</span>
+                {t("nav.greeting", { name: user.username })}
               </span>
               <button onClick={handleLogout} className="btn-secondary py-2">
-                Log out
+                {t("nav.logout")}
               </button>
             </>
           ) : (
             <>
               <Link to="/login" className="btn-ghost py-2">
-                Log in
+                {t("nav.login")}
               </Link>
               <Link to="/register" className="btn-primary py-2">
-                Get started
+                {t("nav.getStarted")}
               </Link>
             </>
           )}
         </div>
 
-        <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-ink md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          <div className="space-y-1.5">
-            <span className="block h-0.5 w-5 bg-ink" />
-            <span className="block h-0.5 w-5 bg-ink" />
-            <span className="block h-0.5 w-5 bg-ink" />
-          </div>
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageToggle className="py-1.5" />
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-ink"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={t("nav.menu")}
+          >
+            <div className="space-y-1.5">
+              <span className="block h-0.5 w-5 bg-ink" />
+              <span className="block h-0.5 w-5 bg-ink" />
+              <span className="block h-0.5 w-5 bg-ink" />
+            </div>
+          </button>
+        </div>
       </nav>
 
       {open && (
         <div className="border-t border-black/5 bg-cream px-5 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             <NavLink to="/batches" className={linkClass} onClick={() => setOpen(false)}>
-              Browse Batches
+              {t("nav.browse")}
             </NavLink>
             <NavLink
               to="/for-farmers"
               className={linkClass}
               onClick={() => setOpen(false)}
             >
-              For Farmers
+              {t("nav.forFarmers")}
             </NavLink>
             {user && (
               <NavLink
@@ -115,7 +123,7 @@ export function Navbar() {
             <div className="mt-2 flex gap-3">
               {user ? (
                 <button onClick={handleLogout} className="btn-secondary flex-1 py-2">
-                  Log out
+                  {t("nav.logout")}
                 </button>
               ) : (
                 <>
@@ -124,14 +132,14 @@ export function Navbar() {
                     className="btn-secondary flex-1 py-2"
                     onClick={() => setOpen(false)}
                   >
-                    Log in
+                    {t("nav.login")}
                   </Link>
                   <Link
                     to="/register"
                     className="btn-primary flex-1 py-2"
                     onClick={() => setOpen(false)}
                   >
-                    Get started
+                    {t("nav.getStarted")}
                   </Link>
                 </>
               )}
