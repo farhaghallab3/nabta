@@ -1,0 +1,13 @@
+Django>=5.2,<6.0
+djangorestframework>=3.16
+djangorestframework-simplejwt>=5.5
+django-cors-headers>=4.9
+django-filter>=25.1
+psycopg[binary]>=3.2
+python-dotenv>=1.0
+qrcode>=8.0
+Pillow>=11.0
+Faker>=30.0
+gunicorn>=23.0
+whitenoise>=6.8
+dj-database-url>=2.3
