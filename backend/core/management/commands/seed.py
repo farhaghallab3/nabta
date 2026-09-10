@@ -3,6 +3,8 @@
 Run:  python manage.py seed            (skips if batches already exist)
       python manage.py seed --force    (wipes demo data and re-seeds)
 """
+import os
+import secrets
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -201,8 +203,14 @@ class Command(BaseCommand):
         consumer.set_password("nabtademo123")
         consumer.save()
 
+        # Create an admin superuser only if none exists. Its password comes from
+        # DJANGO_ADMIN_PASSWORD; without that env var a random one is used and
+        # never printed — set the password yourself (env var or the shell) to
+        # actually log in. The public farmer/consumer accounts are enough for
+        # the demo.
         if not User.objects.filter(is_superuser=True).exists():
-            User.objects.create_superuser("admin", "admin@nabta.test", "nabtademo123")
+            admin_pw = os.environ.get("DJANGO_ADMIN_PASSWORD") or secrets.token_urlsafe(24)
+            User.objects.create_superuser("admin", "admin@nabta.test", admin_pw)
 
         farms = []
         for data in FARMS:
@@ -260,6 +268,6 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {len(farms)} farms, {len(created_batches)} batches (EN/AR). "
-                "Logins: farmer / consumer / admin — password nabtademo123"
+                "Demo logins: farmer / consumer — password nabtademo123"
             )
         )

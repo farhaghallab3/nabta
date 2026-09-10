@@ -3,7 +3,7 @@
 **From the field to your door — fully transparent.**
 
 🔗 **Live demo: [nabta-sigma.vercel.app](https://nabta-sigma.vercel.app)**
-&nbsp; · &nbsp; Demo logins (password `nabtademo123`): **`consumer`** · **`farmer`** · **`admin`**
+&nbsp; · &nbsp; Demo logins (password `nabtademo123`): **`consumer`** · **`farmer`**
 
 Nabta connects consumers directly to real farms in Egypt. A consumer *adopts* a
 share of a crop or animal batch and follows its journey — harvest, cold storage,
@@ -81,7 +81,7 @@ python manage.py seed                                  # 4 farms, 5 batches (EN/
 python manage.py runserver                             # http://127.0.0.1:8000
 ```
 
-**Demo logins** (created by `seed`): `farmer` / `consumer` / `admin` — password `nabtademo123`
+**Demo logins** (created by `seed`): `farmer` / `consumer` — password `nabtademo123`
 
 ### 2. Frontend
 
