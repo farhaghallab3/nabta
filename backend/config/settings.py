@@ -138,7 +138,18 @@ CORS_ALLOWED_ORIGINS = env_list(
     "DJANGO_CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 )
+# Also trust every Vercel deployment (production + preview URLs) by default,
+# so the frontend works without hand-setting an env var. Override with
+# DJANGO_CORS_ALLOWED_ORIGIN_REGEXES to lock this down.
+CORS_ALLOWED_ORIGIN_REGEXES = env_list(
+    "DJANGO_CORS_ALLOWED_ORIGIN_REGEXES",
+    r"^https://.*\.vercel\.app$",
+)
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = list(
+    dict.fromkeys(CSRF_TRUSTED_ORIGINS + CORS_ALLOWED_ORIGINS + ["https://*.vercel.app"])
+)
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
